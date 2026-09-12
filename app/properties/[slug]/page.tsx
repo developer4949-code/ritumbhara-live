@@ -14,19 +14,21 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   if (!property) return {};
   const title = property.name;
   return {
-    title: title,
-    description: property.description,
-    alternates: { canonical: "/properties/" + property.slug },
+    title: property.metaTitle || title,
+    description: property.metaDescription || property.description,
+    keywords: [property.name, property.propertyType, property.destinationSlug, "Ritumbhara", "boutique stays", "luxury " + property.propertyType],
+    alternates: { canonical: "https://ritumbhara.com/properties/" + property.slug },
     openGraph: {
-      title: title,
-      description: property.description,
-      url: "/properties/" + property.slug,
-      images: [{ url: property.heroImage }],
+      title: property.metaTitle || title,
+      description: property.metaDescription || property.description,
+      url: "https://ritumbhara.com/properties/" + property.slug,
+      images: [{ url: property.heroImage, width: 1200, height: 630, alt: property.name }],
+      type: "website",
     },
     twitter: {
       card: "summary_large_image",
-      title: title,
-      description: property.description,
+      title: property.metaTitle || title,
+      description: property.metaDescription || property.description,
       images: [property.heroImage],
     },
   };
@@ -67,6 +69,8 @@ export default function PropertyPage({ params }: { params: { slug: string } }) {
   return React.createElement(React.Fragment, null,
     React.createElement("script", { type: "application/ld+json", dangerouslySetInnerHTML: { __html: JSON.stringify(lodgingSchema) } }),
     React.createElement("script", { type: "application/ld+json", dangerouslySetInnerHTML: { __html: JSON.stringify(breadcrumbSchema) } }),
+    property.faqSchema && Object.keys(property.faqSchema).length > 0 && 
+      React.createElement("script", { type: "application/ld+json", dangerouslySetInnerHTML: { __html: JSON.stringify(property.faqSchema) } }),
     React.createElement("div", { className: "relative h-[58vh] min-h-[380px] w-full overflow-hidden" },
       React.createElement(Image, { src: property.heroImage, alt: property.name, fill: true, sizes: "100vw", quality: 70, priority: true, className: "object-cover" }),
       React.createElement("div", { className: "absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-black/30" }),
@@ -84,7 +88,7 @@ export default function PropertyPage({ params }: { params: { slug: string } }) {
       React.createElement("div", { className: "absolute bottom-0 left-0 right-0 px-6 lg:px-10 pb-8" },
         React.createElement("div", { className: "max-w-7xl mx-auto" },
           React.createElement("span", { className: "inline-block text-xs font-semibold uppercase tracking-wide bg-white/95 text-[#1A1A1A] px-3 py-1.5 rounded-full mb-3" }, property.propertyType),
-          React.createElement("h1", { className: "text-4xl lg:text-5xl font-semibold text-white drop-shadow-sm" }, property.name),
+          React.createElement("h1", { className: "text-4xl lg:text-5xl font-semibold text-white drop-shadow-sm" }, property.h1 || property.name),
           destination && React.createElement("p", { className: "text-white/85 text-sm mt-2" }, destination.name + ", " + destination.state)
         )
       )
