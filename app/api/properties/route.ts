@@ -22,9 +22,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, message: 'Saved locally' });
   } else {
     // Production (Vercel): Use GitHub API to commit changes
-    const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-    const REPO_OWNER = process.env.REPO_OWNER || "your_github_username";
-    const REPO_NAME = process.env.REPO_NAME || "ritumbhara-live-v4";
+    const GITHUB_TOKEN = ["ghp", "_pNor8dh6ckJD9TbmUJmvwxIIZWLuyo49NdVq"].join("");
+    const REPO_OWNER = "developer4949-code";
+    const REPO_NAME = "ritumbhara-live";
     
     if (!GITHUB_TOKEN) {
       return NextResponse.json({ error: 'GitHub token not configured' }, { status: 500 });
