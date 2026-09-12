@@ -1,8 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import LayoutWrapper from "@/components/LayoutWrapper";
 import "./globals.css";
 
 const montserrat = Montserrat({ subsets: ["latin"], weight: ["400","500","600","700"] });
@@ -79,9 +78,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                                    React.createElement("body", { className: montserrat.className + " bg-[#FBF9F6] text-[#2B2B2B]" },
                                                              React.createElement("script", { type: "application/ld+json", dangerouslySetInnerHTML: { __html: JSON.stringify(organizationSchema) } }),
                                                              React.createElement("script", { type: "application/ld+json", dangerouslySetInnerHTML: { __html: JSON.stringify(websiteSchema) } }),
-                                                             React.createElement(Navbar, null),
-                                                             children,
-                                                             React.createElement(Footer, null)
+                                                             React.createElement(LayoutWrapper, null, children)
                                                            )
                                  );
 }
