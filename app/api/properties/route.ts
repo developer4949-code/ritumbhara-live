@@ -15,7 +15,7 @@ export async function GET() {
 export async function POST(request: Request) {
   const properties = await request.json();
   const filePath = path.join(process.cwd(), 'data', 'properties.json');
-  
+
   if (process.env.NODE_ENV === 'development') {
     // Local development: write directly to file system
     fs.writeFileSync(filePath, JSON.stringify(properties, null, 2));
@@ -25,9 +25,13 @@ export async function POST(request: Request) {
     const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
     const REPO_OWNER = process.env.REPO_OWNER;
     const REPO_NAME = process.env.REPO_NAME;
-    
-    if (!GITHUB_TOKEN) {
-      return NextResponse.json({ error: 'GitHub token not configured' }, { status: 500 });
+
+    if (!GITHUB_TOKEN || !REPO_OWNER || !REPO_NAME) {
+      console.error('Missing GitHub environment variables');
+      return NextResponse.json(
+        { error: 'GitHub configuration is missing' },
+        { status: 500 }
+      );
     }
 
     try {
@@ -36,8 +40,22 @@ export async function POST(request: Request) {
       const putUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/data/properties.json`;
       
       const getRes = await fetch(getUrl, {
-        headers: { Authorization: `token ${GITHUB_TOKEN}` }
+        headers: {
+          Authorization: `Bearer ${GITHUB_TOKEN}`,
+          Accept: 'application/vnd.github+json',
+        },
+        cache: 'no-store',
       });
+
+      if (!getRes.ok) {
+        const errorText = await getRes.text();
+        console.error('GitHub GET failed:', getRes.status, errorText);
+        return NextResponse.json(
+          { error: 'Failed to read properties from GitHub' },
+          { status: 502 }
+        );
+      }
+
       const getJson = await getRes.json();
       
       // 2. Update file
@@ -45,7 +63,8 @@ export async function POST(request: Request) {
       const putRes = await fetch(putUrl, {
         method: 'PUT',
         headers: { 
-          Authorization: `token ${GITHUB_TOKEN}`,
+          Authorization: `Bearer ${GITHUB_TOKEN}`,
+          Accept: 'application/vnd.github+json',
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -56,12 +75,22 @@ export async function POST(request: Request) {
         })
       });
       
-      if (!putRes.ok) throw new Error('GitHub API error');
+      if (!putRes.ok) {
+        const errorText = await putRes.text();
+        console.error('GitHub PUT failed:', putRes.status, errorText);
+        return NextResponse.json(
+          { error: 'Failed to save properties to GitHub' },
+          { status: 502 }
+        );
+      }
       
       return NextResponse.json({ success: true, message: 'Saved to GitHub' });
     } catch (error) {
-      console.error(error);
-      return NextResponse.json({ error: 'Failed to save to GitHub' }, { status: 500 });
+      console.error('GitHub save error:', error);
+      return NextResponse.json(
+        { error: 'Failed to save to GitHub' },
+        { status: 500 }
+      );
     }
   }
 }
