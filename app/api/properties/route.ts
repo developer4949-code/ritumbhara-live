@@ -47,7 +47,7 @@ export async function POST(request: Request) {
         cache: 'no-store',
       });
 
-      if (!getRes.ok) {
+      if (!getRes.ok && getRes.status !== 404) {
         const errorText = await getRes.text();
         console.error('GitHub GET failed:', getRes.status, errorText);
         return NextResponse.json(
@@ -56,9 +56,13 @@ export async function POST(request: Request) {
         );
       }
 
-      const getJson = await getRes.json();
+      let fileSha = undefined;
+      if (getRes.ok) {
+        const getJson = await getRes.json();
+        fileSha = getJson.sha;
+      }
       
-      // 2. Update file on the main branch
+      // 2. Update or create file on the main branch
       const content = Buffer.from(JSON.stringify(properties, null, 2)).toString('base64');
       const putRes = await fetch(putUrl, {
         method: 'PUT',
@@ -70,7 +74,7 @@ export async function POST(request: Request) {
         body: JSON.stringify({
           message: 'Update properties and SEO via Admin Panel',
           content: content,
-          sha: getJson.sha,
+          sha: fileSha,
           branch: 'main'
         })
       });
