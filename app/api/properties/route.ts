@@ -35,8 +35,8 @@ export async function POST(request: Request) {
     }
 
     try {
-      // 1. Get current file SHA from the specific branch
-      const getUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/data/properties.json?ref=feature/seo-optimization`;
+      // 1. Get current file SHA from the main branch
+      const getUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/data/properties.json?ref=main`;
       const putUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/data/properties.json`;
       
       const getRes = await fetch(getUrl, {
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
 
       const getJson = await getRes.json();
       
-      // 2. Update file
+      // 2. Update file on the main branch
       const content = Buffer.from(JSON.stringify(properties, null, 2)).toString('base64');
       const putRes = await fetch(putUrl, {
         method: 'PUT',
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
           message: 'Update properties and SEO via Admin Panel',
           content: content,
           sha: getJson.sha,
-          branch: 'feature/seo-optimization'
+          branch: 'main'
         })
       });
       
