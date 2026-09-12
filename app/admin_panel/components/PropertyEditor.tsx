@@ -2,10 +2,17 @@
 
 import React, { useState } from "react";
 
-export default function PropertyEditor({ property, onSave, onCancel }: { property: any, onSave: (p: any) => void, onCancel: () => void }) {
+export default function PropertyEditor({ property, onSave, onCancel }: { property: any, onSave: (p: any) => Promise<void>, onCancel: () => void }) {
   const [formData, setFormData] = useState(property);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSaveClick = async () => {
+    setIsSaving(true);
+    await onSave(formData);
+    setIsSaving(false);
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -70,9 +77,13 @@ export default function PropertyEditor({ property, onSave, onCancel }: { propert
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">{formData.name || "New Property"}</h2>
         <div className="flex gap-3">
-          <button onClick={onCancel} className="px-4 py-2 text-gray-600 hover:text-gray-900 font-medium">Cancel</button>
-          <button onClick={() => onSave(formData)} className="bg-[#1A1A1A] text-white px-6 py-2 rounded-lg font-medium hover:bg-black transition-colors">
-            Select & Push
+          <button onClick={onCancel} className="px-4 py-2 text-gray-600 hover:text-gray-900 font-medium" disabled={isSaving}>Cancel</button>
+          <button 
+            onClick={handleSaveClick} 
+            disabled={isSaving}
+            className="bg-[#1A1A1A] text-white px-6 py-2 rounded-lg font-medium hover:bg-black transition-colors disabled:opacity-50"
+          >
+            {isSaving ? "Pushing..." : "Select & Push"}
           </button>
         </div>
       </div>

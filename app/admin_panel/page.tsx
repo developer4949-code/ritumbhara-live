@@ -31,14 +31,26 @@ export default function AdminPanel() {
       ? [...properties, updatedProperty] 
       : properties.map((p) => (p.slug === updatedProperty.slug ? updatedProperty : p));
     
+    // Optimistic UI update
     setProperties(newProperties);
-    setSelectedProperty(null);
 
-    await fetch("/api/properties", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newProperties),
-    });
+    try {
+      const res = await fetch("/api/properties", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newProperties),
+      });
+      const data = await res.json();
+      
+      if (!res.ok || data.error) {
+        throw new Error(data.error || "Failed to push to GitHub");
+      }
+      
+      alert("Successfully pushed to GitHub! Vercel is deploying now.");
+      setSelectedProperty(null);
+    } catch (err: any) {
+      alert("Error: " + err.message + "\n\nMake sure GITHUB_TOKEN, REPO_OWNER, and REPO_NAME are set in Vercel.");
+    }
   };
 
   if (!isAuthenticated) {
